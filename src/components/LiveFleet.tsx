@@ -7,9 +7,9 @@ import { robotsMapAtom, robotIdsAtom, applyUpdatesAtom } from "@/state/atoms";
 import { PollingSource } from "@/realtime/PollingSource";
 import { SummaryBar } from "./SummaryBar";
 import { Filters } from "./Filters";
-import { PositionCanvas } from "./PositionCanvas";
 import { FleetList } from "./FleetList";
 import { DetailPanel } from "./DetailPanel";
+// PositionCanvas는 일단 숨김(코드는 유지). 다시 켜려면 아래 렌더에 <PositionCanvas/> 추가.
 import type { Robot } from "@/domain/robot";
 
 export function LiveFleet({ initialRobots }: { initialRobots: Robot[] }) {
@@ -35,12 +35,7 @@ export function LiveFleet({ initialRobots }: { initialRobots: Robot[] }) {
     <div className="flex w-full flex-col items-center gap-3">
       <SummaryBar />
       <Filters />
-      <div className="flex w-full flex-col items-center gap-4 lg:flex-row lg:items-start lg:justify-center">
-        <PositionCanvas />
-        <div className="w-full max-w-2xl">
-          <FleetList />
-        </div>
-      </div>
+      <FleetList />
       <p className="flex items-center gap-2 text-xs text-neutral-500">
         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
         실시간 폴링 중 · {ticks}회 갱신
