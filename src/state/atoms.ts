@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { atomFamily } from "jotai/utils";
-import type { Robot, RobotUpdate } from "@/domain/robot";
+import type { Robot, RobotStatus, RobotUpdate } from "@/domain/robot";
 
 // id → Robot 맵. 개별 로봇 조회를 O(1)로, 행별 atom 구독을 가능하게.
 export const robotsMapAtom = atom<Record<string, Robot>>({});
@@ -26,3 +26,27 @@ export const applyUpdatesAtom = atom(
     set(robotsMapAtom, map);
   },
 );
+
+// --- M6: 검색 / 필터 / 선택 ---
+
+export const searchQueryAtom = atom("");
+export const statusFilterAtom = atom<Set<RobotStatus>>(new Set<RobotStatus>());
+export const selectedIdAtom = atom<string | null>(null);
+
+// 검색 + 상태필터를 적용한 표시용 id 목록.
+// 필터가 전혀 없으면 robotIdsAtom 원본을 그대로 반환 → 참조 안정(리렌더 절약).
+export const filteredIdsAtom = atom((get) => {
+  const ids = get(robotIdsAtom);
+  const q = get(searchQueryAtom).trim().toLowerCase();
+  const statuses = get(statusFilterAtom);
+  if (!q && statuses.size === 0) return ids;
+
+  const map = get(robotsMapAtom);
+  return ids.filter((id) => {
+    const r = map[id];
+    if (!r) return false;
+    if (statuses.size > 0 && !statuses.has(r.status)) return false;
+    if (q && !r.id.toLowerCase().includes(q)) return false;
+    return true;
+  });
+});

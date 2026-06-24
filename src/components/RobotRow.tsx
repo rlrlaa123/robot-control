@@ -1,8 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import { useAtomValue } from "jotai";
-import { robotByIdAtom } from "@/state/atoms";
+import { useAtomValue, useSetAtom } from "jotai";
+import { robotByIdAtom, selectedIdAtom } from "@/state/atoms";
 import { getBatteryLevel } from "@/domain/battery";
 import type { RobotStatus } from "@/domain/robot";
 
@@ -27,13 +27,20 @@ const BATTERY_BAR: Record<"normal" | "warning" | "critical", string> = {
 // id(문자열)는 안정적이라 memo가 부모 리렌더로 인한 재렌더도 막아준다.
 export const RobotRow = memo(function RobotRow({ id }: { id: string }) {
   const robot = useAtomValue(robotByIdAtom(id));
+  const setSelected = useSetAtom(selectedIdAtom);
+  const isSelected = useAtomValue(selectedIdAtom) === id;
   if (!robot) return null;
 
   const s = STATUS_STYLE[robot.status];
   const level = getBatteryLevel(robot.battery);
 
   return (
-    <div className="flex h-full items-center gap-3 border-b border-neutral-800 px-3 text-sm">
+    <div
+      onClick={() => setSelected((prev: string | null) => (prev === id ? null : id))}
+      className={`flex h-full cursor-pointer items-center gap-3 border-b border-neutral-800 px-3 text-sm hover:bg-neutral-900 ${
+        isSelected ? "bg-neutral-800/80 ring-1 ring-inset ring-sky-500/40" : ""
+      }`}
+    >
       <span className="w-20 shrink-0 font-mono text-neutral-300">{robot.id}</span>
       <span className={`flex w-20 shrink-0 items-center gap-1.5 ${s.text}`}>
         <span className={`h-2 w-2 rounded-full ${s.dot}`} />

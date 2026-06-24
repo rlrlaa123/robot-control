@@ -6,7 +6,9 @@ import { useHydrateAtoms } from "jotai/utils";
 import { robotsMapAtom, robotIdsAtom, applyUpdatesAtom } from "@/state/atoms";
 import { PollingSource } from "@/realtime/PollingSource";
 import { SummaryBar } from "./SummaryBar";
+import { Filters } from "./Filters";
 import { FleetList } from "./FleetList";
+import { DetailPanel } from "./DetailPanel";
 import type { Robot } from "@/domain/robot";
 
 export function LiveFleet({ initialRobots }: { initialRobots: Robot[] }) {
@@ -31,11 +33,13 @@ export function LiveFleet({ initialRobots }: { initialRobots: Robot[] }) {
   return (
     <div className="flex w-full flex-col items-center gap-3">
       <SummaryBar />
+      <Filters />
       <FleetList />
       <p className="flex items-center gap-2 text-xs text-neutral-500">
         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
         실시간 폴링 중 · {ticks}회 갱신
       </p>
+      <DetailPanel />
     </div>
   );
 }

@@ -1,18 +1,41 @@
 "use client";
 
 import { FixedSizeList, type ListChildComponentProps } from "react-window";
-import { useAtomValue } from "jotai";
-import { robotIdsAtom } from "@/state/atoms";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  filteredIdsAtom,
+  searchQueryAtom,
+  statusFilterAtom,
+} from "@/state/atoms";
 import { RobotRow } from "./RobotRow";
 
 const ROW_HEIGHT = 40;
 const LIST_HEIGHT = 520;
 
-// 순서(ids)만 구독 → 폴링 갱신으로 robotsMap이 바뀌어도 이 컴포넌트는 리렌더 안 됨.
-// react-window: 500행 중 화면에 보이는 ~13행 + 오버스캔만 DOM에 그리고 스크롤 시 재활용.
-// 각 RobotRow는 memo + robotByIdAtom이라, 바뀐 로봇 행만 리렌더된다.
+// 필터 결과(filteredIds)만 구독. 필터가 없으면 robotIdsAtom 원본이라 참조 안정.
+// react-window: 보이는 ~13행 + 오버스캔만 DOM에 그림. 각 RobotRow는 memo + robotByIdAtom.
 export function FleetList() {
-  const ids = useAtomValue(robotIdsAtom);
+  const ids = useAtomValue(filteredIdsAtom);
+  const setQuery = useSetAtom(searchQueryAtom);
+  const setFilter = useSetAtom(statusFilterAtom);
+
+  if (ids.length === 0) {
+    return (
+      <div className="flex h-[520px] w-full max-w-2xl flex-col items-center justify-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950 text-neutral-500">
+        <p>조건에 맞는 로봇이 없습니다</p>
+        <button
+          type="button"
+          onClick={() => {
+            setQuery("");
+            setFilter(new Set());
+          }}
+          className="rounded-md border border-neutral-700 px-3 py-1 text-sm text-neutral-300 hover:bg-neutral-800"
+        >
+          필터 초기화
+        </button>
+      </div>
+    );
+  }
 
   return (
     <FixedSizeList
