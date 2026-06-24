@@ -1,22 +1,32 @@
 "use client";
 
+import { FixedSizeList, type ListChildComponentProps } from "react-window";
 import { useAtomValue } from "jotai";
-import { robotsMapAtom, robotIdsAtom } from "@/state/atoms";
+import { robotIdsAtom } from "@/state/atoms";
 import { RobotRow } from "./RobotRow";
 
-// M4(현재): robotsMapAtom을 통째로 구독 → 매 틱 전체 리스트가 리렌더된다.
-// 순서는 robotIdsAtom으로 고정해 실시간 갱신에도 행이 재정렬돼 튀지 않음(UX 7번).
-// M5에서 react-window 가상화 + 행 memo로 "불필요 리렌더/DOM"을 걷어낼 예정.
+const ROW_HEIGHT = 40;
+const LIST_HEIGHT = 520;
+
+// 순서(ids)만 구독 → 폴링 갱신으로 robotsMap이 바뀌어도 이 컴포넌트는 리렌더 안 됨.
+// react-window: 500행 중 화면에 보이는 ~13행 + 오버스캔만 DOM에 그리고 스크롤 시 재활용.
+// 각 RobotRow는 memo + robotByIdAtom이라, 바뀐 로봇 행만 리렌더된다.
 export function FleetList() {
   const ids = useAtomValue(robotIdsAtom);
-  const map = useAtomValue(robotsMapAtom);
 
   return (
-    <div className="h-[55vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950">
-      {ids.map((id) => {
-        const robot = map[id];
-        return robot ? <RobotRow key={id} robot={robot} /> : null;
-      })}
-    </div>
+    <FixedSizeList
+      height={LIST_HEIGHT}
+      width="100%"
+      itemCount={ids.length}
+      itemSize={ROW_HEIGHT}
+      className="w-full max-w-2xl rounded-lg border border-neutral-800 bg-neutral-950"
+    >
+      {({ index, style }: ListChildComponentProps) => (
+        <div style={style}>
+          <RobotRow id={ids[index]} />
+        </div>
+      )}
+    </FixedSizeList>
   );
 }
